@@ -20,6 +20,7 @@ return new class extends Migration
             $table->enum('gender', ['male', 'female']);
             $table->string('hobbies')->nullable();
             $table->string('profile');
+            $table->string('device_info', 500)->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

@@ -17,7 +17,6 @@ return new class extends Migration
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->string('refresh_token', 500)->unique();
             $table->string('device_id')->unique();
-            $table->string('device_info', 500)->nullable();
             $table->timestamp('expired_at');
             $table->timestamps();
         });
