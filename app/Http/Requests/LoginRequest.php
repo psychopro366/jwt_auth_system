@@ -15,7 +15,7 @@ class LoginRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -26,11 +26,12 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'email', 
-            Rule::unique('users')
+            'email' => [
+                'required', 
+                'email'
         ],
-            'password' => ['required', 'confirmed', 
-            Password::min(5)->max(10)
+            'password' => [
+                'required'
         ],
             
     ];

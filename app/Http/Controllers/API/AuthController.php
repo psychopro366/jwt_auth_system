@@ -22,8 +22,11 @@ use DB;
             DB::beginTransaction();
 
             try {
+
+                //Get validated data 
                 $data = $request->validated();
 
+                // Retrived device info 
                 $device = $this->deviceInfo();
 
                 // Handle profile upload (validated in RegisterRequest)
@@ -52,6 +55,37 @@ use DB;
 
             } catch (\Throwable $e) {
                 DB::rollBack();
+                return $this->sendError($e->getMessage(), [], 500);
+            }
+        }
+
+
+        /**
+         * Login User through their credentials 
+         */
+        public function login(LoginRequest $request): JsonResponse
+        {
+            try {
+                //Retrieves credentials fromm the user 
+                $credentials = $request->safe()->only('email', 'password');
+
+                // checks if user exists 
+                $user = User::where('email', $credentials['email'])->first();
+
+                // verify user password 
+                if (!$user || !Hash::check($credentials['password'], $user->password)) {
+                    return $this->sendError('Invalid credentials.', [], 401);
+                }
+
+                $device = $this->deviceInfo();
+                $device['device_id'] = Str::uuid()->toString();
+
+                $response = $this->createToken($user, $device);
+
+                return $this->sendResponse($response, 'Logged in successfully.');
+
+            } catch (\Throwable $e) {
+                //\Log::error($e);
                 return $this->sendError($e->getMessage(), [], 500);
             }
         }
