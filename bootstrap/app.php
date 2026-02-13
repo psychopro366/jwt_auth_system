@@ -12,7 +12,22 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        
+        // Register Cors middleware globally 
+        $middleware->append([
+            \App\Http\Middleware\Cors::class,
+        ]);
+
+        // Append ForceJsonResponse Middleware in 'api' group middleware 
+        $middleware->appendToGroup('api', [
+            \App\Http\Middleware\ForceJsonResponse::class,
+        ]);
+
+        // Registered ForceJsonResponse Middleware as route iddleware 
+        $middleware->alias([
+            'cors' => \App\Http\Middleware\Cors::class,
+        ]);
+
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
