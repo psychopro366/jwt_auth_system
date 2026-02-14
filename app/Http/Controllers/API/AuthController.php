@@ -10,7 +10,9 @@ use App\Http\Requests\LoginRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use DB;
+use Illuminate\Support\Facades\Validator;
 
     class AuthController extends BaseController
     {
@@ -89,4 +91,64 @@ use DB;
                 return $this->sendError($e->getMessage(), [], 500);
             }
         }
+
+
+        /**
+         * Logout authenticated user according to device_id
+         * We need to:
+         * Get the authenticated user from the JWT token.
+         * Accept a device_id from the client.
+         * Delete the refresh token associated with that device.
+         * Invalidate the current JWT token.
+         * Return a JSON response.
+         */
+        public function logout(Request $request)
+        {
+            // Validate that device_id is provided
+            $validator = Validator::make($request->all(), [
+                'device_id' => 'required|string'
+            ]);
+
+            if ($validator->fails()) {
+                return $this->sendError('The device id must be required.', [], 401);
+            }
+
+            try {
+
+                // Get the authenticated user from JWT
+                $user = JWTAuth::parseToken()->authenticate();
+
+                // Delete refresh token for this device
+                $deleted = $user->refreshTokens()
+                ->where('device_id', $request->device_id)
+                ->delete();
+
+                if (!$deleted) {
+                    return $this->sendError('Invalid device_id or no token found for this device', [], 404);
+                }
+
+                // Invalidate current JWT token
+                JWTAuth::invalidate(JWTAuth::getToken());
+
+                return $this->sendResponse([], 'Logged out successfully from this device');
+
+            } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
+                return $this->sendError('Token has expired', [], 401);
+            } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+                 return $this->sendError('Token is invalid', [], 401);
+            } catch (\Throwable $e) {
+                 return $this->sendError($e->getMessage(), [], 500);
+            }
+        }
 }
+
+
+
+
+
+
+
+
+
+
+

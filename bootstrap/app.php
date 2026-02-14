@@ -16,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register Cors middleware globally 
         $middleware->append([
             \App\Http\Middleware\Cors::class,
+            \App\Http\Middleware\ForceJsonResponse::class,
+
         ]);
 
         // Append ForceJsonResponse Middleware in 'api' group middleware 
@@ -26,6 +28,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // Registered ForceJsonResponse Middleware as route iddleware 
         $middleware->alias([
             'cors' => \App\Http\Middleware\Cors::class,
+            'json.response' => \App\Http\Middleware\ForceJsonResponse::class,
+             'jwt.auth' => \Tymon\JWTAuth\Http\Middleware\Authenticate::class,
         ]);
 
     })
