@@ -34,6 +34,7 @@ class RefreshToken extends Authenticatable
     {
         return [
             'device_info' => 'json',
+            'expired_at' => 'datetime'
         ];
     }
 

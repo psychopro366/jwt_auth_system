@@ -8,6 +8,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Models\RefreshToken;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+use Hash;
 
 class BaseController extends Controller
 {
@@ -101,26 +102,26 @@ class BaseController extends Controller
         $refresh_token = Str::random(60);
 
         $accessExpiry = Carbon::now()->addMinutes(config('jwt.ttl'));
-    $refreshExpiry = Carbon::now()->addDays(30); // better practice
+        $refreshExpiry = Carbon::now()->addDays(30); // better practice
 
-    $refreshModel = RefreshToken::firstOrNew([
-        'device_id' => $deviceId,
-        'user_id' => $user->id
-    ]);
+        $refreshModel = RefreshToken::firstOrNew([
+            'device_id' => $deviceId,
+            'user_id' => $user->id
+        ]);
 
-    $refreshModel->fill([
-        'refresh_token' => $refresh_token,
-        'expired_at' => $refreshExpiry
-    ]);
+        $refreshModel->fill([
+            'refresh_token' => Hash::make($refresh_token),
+            'expired_at' => $refreshExpiry
+        ]);
 
-    $refreshModel->save();
+        $refreshModel->save();
 
-    return [
-        'access_token' => $access_token,
-        'token_type' => 'bearer',
-        'refresh_token' => $refresh_token,
-        'deviceId' => $deviceId,
-        'expires_in' => config('jwt.ttl') * 60
-    ];
-}
+        return [
+            'access_token' => $access_token,
+            'token_type' => 'bearer',
+            'refresh_token' => $refresh_token,
+            'deviceId' => $deviceId,
+            'expires_in' => config('jwt.ttl') * 60
+        ];
+    }
 }
