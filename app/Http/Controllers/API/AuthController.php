@@ -46,6 +46,9 @@ use Illuminate\Support\Facades\Validator;
                 // Create user
                 $user = User::create($data);
 
+                // Send verification mail to user 
+                $user->sendEmailVerificationNotification();
+
                 // Generate device_id
                 $device['device_id'] = Str::uuid()->toString();
 
@@ -53,7 +56,7 @@ use Illuminate\Support\Facades\Validator;
 
                 DB::commit();
 
-                return $this->sendResponse($response, 'User registered successfully.', 201);
+                return $this->sendResponse($response, 'User registered successfully. Please verify your email.', 201);
 
             } catch (\Throwable $e) {
                 DB::rollBack();
@@ -79,6 +82,12 @@ use Illuminate\Support\Facades\Validator;
                     return $this->sendError('Invalid credentials.', [], 401);
                 }
 
+                //Login (block unverified users)
+                if (!$user->hasVerifiedEmail()) {
+                    return $this->sendError('Please verify your email', [
+                        'error' => 'Email is not verified.'
+                    ], 403);
+                }
                 $device = $this->deviceInfo();
                 $device['device_id'] = Str::uuid()->toString();
 
